@@ -1,53 +1,31 @@
-name: Keep Supabase Alive
+name: Supabase Keep Alive
 
 on:
   schedule:
-    # Every day at 00:00 UTC
     - cron: "0 0 * * *"
-
   workflow_dispatch:
 
 jobs:
-  ping-projects:
+  ping:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Parse projects and ping them
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Run Keep Alive Script
+        id: run
+        run: bash scripts/ping.sh
+
+      - name: Write GitHub Summary
         run: |
+          echo "${{ steps.run.outputs.summary }}" >> $GITHUB_STEP_SUMMARY
 
-          echo "=================================="
-          echo "SUPABASE KEEP-ALIVE STARTED"
-          echo "=================================="
-
-          echo '${{ secrets.PROJECTS_CONFIG }}' |
-          jq -c '.[]' |
-          while read project; do
-
-            NAME=$(echo "$project" | jq -r '.name')
-            URL=$(echo "$project" | jq -r '.url')
-            APIKEY=$(echo "$project" | jq -r '.apikey')
-            TABLE=$(echo "$project" | jq -r '.table')
-
-            echo ""
-            echo "🔍 Pinging $NAME..."
-
-            if curl \
-              --silent \
-              --show-error \
-              --fail \
-              "$URL/rest/v1/$TABLE?select=id&limit=1" \
-              -H "apikey: $APIKEY" \
-              -H "Authorization: Bearer $APIKEY" \
-              -H "Content-Type: application/json"
-            then
-              echo "✅ SUCCESS: $NAME"
-            else
-              echo "❌ FAILED: $NAME"
-            fi
-
-          done
-
-          echo ""
-          echo "=================================="
-          echo "KEEP-ALIVE FINISHED"
-          echo "=================================="
+      - name: Send Telegram Notification
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d text="${{ steps.run.outputs.telegram_message }}"
