@@ -1,0 +1,14 @@
+[
+    {
+        "name": "Project 1",
+        "url": "https://project-ref.supabase.co",
+        "apikey": "YOUR_SUPABASE_ANON_KEY",
+        "table": "profiles"
+    },
+    {
+        "name": "Project 2",
+        "url": "https://project-ref.supabase.co",
+        "apikey": "YOUR_SUPABASE_ANON_KEY",
+        "table": "users"
+    }
+]
