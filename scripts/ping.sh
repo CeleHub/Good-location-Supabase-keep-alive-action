@@ -1,15 +1,19 @@
 #!/bin/bash
 
-PROJECTS='${{ secrets.PROJECTS_CONFIG }}'
+# ✅ FIXED: read from environment variable (NOT GitHub syntax)
+PROJECTS="$PROJECTS_CONFIG"
 
 SUCCESS=0
 FAIL=0
 
-SUMMARY="SUPABASE KEEP-ALIVE SUMMARY\n==================================\n"
+SUMMARY="SUPABASE KEEP-ALIVE SUMMARY
+=================================="
 
-TELEGRAM="🚀 Supabase Keep-Alive Report\n\n"
+TELEGRAM="🚀 Supabase Keep-Alive Report
 
-echo "$PROJECTS" | jq -c '.[]' | while read project; do
+"
+
+echo "$PROJECTS" | jq -c '.[]' | while read -r project; do
 
   NAME=$(echo "$project" | jq -r '.name')
   URL=$(echo "$project" | jq -r '.url')
@@ -24,13 +28,17 @@ echo "$PROJECTS" | jq -c '.[]' | while read project; do
     -H "Authorization: Bearer $KEY"
   then
     echo "✅ $NAME PING SUCCESSFUL"
-    SUMMARY+="\n✅ $NAME"
-    TELEGRAM+="✅ $NAME PING SUCCESSFUL\n"
+    SUMMARY+="
+✅ $NAME"
+    TELEGRAM+="✅ $NAME PING SUCCESSFUL
+"
     ((SUCCESS++))
   else
     echo "❌ $NAME PING FAILED"
-    SUMMARY+="\n❌ $NAME"
-    TELEGRAM+="❌ $NAME PING FAILED\n"
+    SUMMARY+="
+❌ $NAME"
+    TELEGRAM+="❌ $NAME PING FAILED
+"
     ((FAIL++))
   fi
 
@@ -38,18 +46,27 @@ done
 
 TOTAL=$((SUCCESS + FAIL))
 
-SUMMARY+="\n\n----------------------------------"
-SUMMARY+="\nTotal Projects : $TOTAL"
-SUMMARY+="\nSuccessful      : $SUCCESS"
-SUMMARY+="\nFailed          : $FAIL"
-SUMMARY+="\n=================================="
+SUMMARY+="
 
-TELEGRAM+="\n📊 Summary:\nSuccess: $SUCCESS | Failed: $FAIL"
+----------------------------------
+Total Projects : $TOTAL
+Successful      : $SUCCESS
+Failed          : $FAIL
+=================================="
 
-echo "summary<<EOF" >> $GITHUB_OUTPUT
-echo -e "$SUMMARY" >> $GITHUB_OUTPUT
-echo "EOF" >> $GITHUB_OUTPUT
+TELEGRAM+="
+📊 Summary:
+Success: $SUCCESS | Failed: $FAIL"
 
-echo "telegram_message<<EOF" >> $GITHUB_OUTPUT
-echo -e "$TELEGRAM" >> $GITHUB_OUTPUT
-echo "EOF" >> $GITHUB_OUTPUT
+# ✅ GitHub Outputs (correct format)
+{
+  echo "summary<<EOF"
+  echo -e "$SUMMARY"
+  echo "EOF"
+} >> "$GITHUB_OUTPUT"
+
+{
+  echo "telegram_message<<EOF"
+  echo -e "$TELEGRAM"
+  echo "EOF"
+} >> "$GITHUB_OUTPUT"
