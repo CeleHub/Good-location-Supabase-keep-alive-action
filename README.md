@@ -1,4 +1,4 @@
-# Supabase Keep-Alive
+# Good's location (Supabase) Keep-Alive
 
 This repository contains a GitHub Actions workflow that pings my Supabase project named "Good's location" regularly to prevent it from sleeping on the free tier.
 
