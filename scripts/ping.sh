@@ -13,7 +13,7 @@ TELEGRAM="🚀 Supabase Keep-Alive Report
 
 "
 
-echo "$PROJECTS" | jq -c '.[]' | while read -r project; do
+while read -r project; do
 
   NAME=$(echo "$project" | jq -r '.name')
   URL=$(echo "$project" | jq -r '.url')
@@ -42,7 +42,7 @@ echo "$PROJECTS" | jq -c '.[]' | while read -r project; do
     ((FAIL++))
   fi
 
-done
+done < <(echo "$PROJECTS" | jq -c '.[]')
 
 TOTAL=$((SUCCESS + FAIL))
 
